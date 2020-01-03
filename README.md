@@ -6,7 +6,7 @@ The Multi-Cluster architecture is a F5 Aliances product shocase and will be part
 ## Goal
 The Purpose of the multi cluster use case is to show how F5 Container Ingress Services can be used inconjunction with serveral other F5 Aliances integrations to demonstrate conducting an A / B Deployment of a web application.
 
-insert E2E image here
+![E2E Architecture](/images/e2earchitecture.png)
 
 ## Prerequisites
 Currently some of the set up for this architecture is a manual process. A method to build these POC envornments via the F5 Povisioner is in progress. For this learning materal you will need several prerequisites in place to begin.
