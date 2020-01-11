@@ -1,7 +1,7 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>Allows to publish applications with a blue-green deployment strategy using the DC-specific DNS entries</description>
+  <description>Allows publication of applications following an A/B deployment strategy using GSLB DNS</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.8"/>
@@ -14,45 +14,45 @@
       </strategy>
     </jenkins.model.BuildDiscarderProperty>
     <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.12">
-      <gitLabConnection>moad-publish</gitLabConnection>
+      <gitLabConnection>not-used</gitLabConnection>
     </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.78">
-          <name>APPNAME</name>
-          <description>Name of the application. When publishing locally, host name is derived from APPNAME.</description>
+          <name>HOST</name>
+          <description>Host that is going to be distributed amongst data centres</description>
           <quoteValue>false</quoteValue>
           <saveJSONParameterToFile>false</saveJSONParameterToFile>
           <visibleItemCount>1</visibleItemCount>
           <type>PT_SINGLE_SELECT</type>
-          <value>productpage-v1,productpage-v2,basic-app-v1</value>
-          <defaultValue>productpage-v1</defaultValue>
+          <value>productpage</value>
+          <defaultValue>productpage</defaultValue>
           <multiSelectDelimiter>,</multiSelectDelimiter>
-          <projectName>2-local-stepped</projectName>
+          <projectName>Publish</projectName>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.78">
-          <name>DCNAME</name>
-          <description>data centre where the requested state is going to be applied</description>
+          <name>GSLB_RATIO_ONPREM</name>
+          <description>Ratio of the traffic sent to the On Premises DC</description>
           <quoteValue>false</quoteValue>
           <saveJSONParameterToFile>false</saveJSONParameterToFile>
-          <visibleItemCount>1</visibleItemCount>
-          <type>PT_SINGLE_SELECT</type>
-          <value>onprem,aws</value>
-          <defaultValue>onprem</defaultValue>
+          <visibleItemCount>7</visibleItemCount>
+          <type>PT_RADIO</type>
+          <value>0,5,25,50,75,95,100</value>
+          <defaultValue>0</defaultValue>
           <multiSelectDelimiter>,</multiSelectDelimiter>
-          <projectName>2-local-stepped</projectName>
+          <projectName>Publish</projectName>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.78">
-          <name>REQUESTED_STATE</name>
-          <description>requested state for the application/data centre combination</description>
+          <name>GSLB_RATIO_AWS</name>
+          <description>Ratio of the traffic sent to the AWS DC</description>
           <quoteValue>false</quoteValue>
           <saveJSONParameterToFile>false</saveJSONParameterToFile>
-          <visibleItemCount>1</visibleItemCount>
-          <type>PT_SINGLE_SELECT</type>
-          <value>bigip-unconfigured,bigip-configured</value>
-          <defaultValue>bigip-unconfigured</defaultValue>
+          <visibleItemCount>7</visibleItemCount>
+          <type>PT_RADIO</type>
+          <value>0,5,25,50,75,95,100</value>
+          <defaultValue>0</defaultValue>
           <multiSelectDelimiter>,</multiSelectDelimiter>
-          <projectName>2-local-stepped</projectName>
+          <projectName>Publish</projectName>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
@@ -61,8 +61,8 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>http://gitlab.bd.f5.com/moad/moad-publish.git</url>
-        <credentialsId>d24fd108-2803-486c-b27a-ea5a070a4717</credentialsId>
+        <url>https://github.com/generic-admin/yourrepohere.git</url>
+        <credentialsId>9790dbab-5874-4db6-9f37-12787ad17b96</credentialsId>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
@@ -89,19 +89,16 @@
 def BUILD_NUMBER = build.properties.environment.BUILD_NUMBER.toString();
 def JOB_BASE_NAME = build.properties.environment.JOB_BASE_NAME.toString();
 
-def APPNAME = build.properties.environment.APPNAME.toString();
-def DCNAME = build.properties.environment.DCNAME.toString();
-def REQUESTED_STATE = build.properties.environment.REQUESTED_STATE.toString();
+def HOST = build.properties.environment.HOST.toString();
 
-  
-build.displayName = &quot;#&quot; + BUILD_NUMBER + &quot;-&quot; +JOB_BASE_NAME + &quot;: &quot; + APPNAME + &quot;-&quot; + DCNAME + &quot;-&quot; +REQUESTED_STATE;
+build.displayName = &quot;#&quot; + BUILD_NUMBER + &quot;-&quot; +JOB_BASE_NAME + &quot;: &quot; + HOST ; 
 </script>
           <sandbox>false</sandbox>
         </script>
       </source>
     </hudson.plugins.groovy.SystemGroovy>
     <org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder plugin="ansible@1.0">
-      <playbook>config-create-requested-state-publish-local.yaml</playbook>
+      <playbook>config-create-requested-state-publish-global.yaml</playbook>
       <inventory class="org.jenkinsci.plugins.ansible.InventoryDoNotSpecify"/>
       <ansibleName>Ansible</ansibleName>
       <limit></limit>
@@ -122,7 +119,7 @@ build.displayName = &quot;#&quot; + BUILD_NUMBER + &quot;-&quot; +JOB_BASE_NAME 
       <copyCredentialsInWorkspace>false</copyCredentialsInWorkspace>
     </org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder>
     <org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder plugin="ansible@1.0">
-      <playbook>config-validate-publish-local.yaml</playbook>
+      <playbook>config-validate-publish-global.yaml</playbook>
       <inventory class="org.jenkinsci.plugins.ansible.InventoryDoNotSpecify"/>
       <ansibleName>Ansible</ansibleName>
       <limit></limit>
@@ -143,7 +140,7 @@ build.displayName = &quot;#&quot; + BUILD_NUMBER + &quot;-&quot; +JOB_BASE_NAME 
       <copyCredentialsInWorkspace>false</copyCredentialsInWorkspace>
     </org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder>
     <org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder plugin="ansible@1.0">
-      <playbook>as3-deploy.yaml</playbook>
+      <playbook>gslb-ab-deploy.yaml</playbook>
       <inventory class="org.jenkinsci.plugins.ansible.InventoryDoNotSpecify"/>
       <ansibleName>Ansible</ansibleName>
       <limit></limit>
@@ -186,7 +183,7 @@ build.displayName = &quot;#&quot; + BUILD_NUMBER + &quot;-&quot; +JOB_BASE_NAME 
       <extraVars>
         <org.jenkinsci.plugins.ansible.ExtraVar>
           <key>msg</key>
-          <value>commit: publishing state changed for application $APPNAME in DC $DCNAME to state $REQUESTED_STATE</value>
+          <value>commit: changing GLSB ratios for $HOST - GSLB_RATIO_ONPREM is $GSLB_RATIO_ONPREM - GSLB_RATIO_AWS is $GSLB_RATIO_AWS</value>
           <hidden>false</hidden>
         </org.jenkinsci.plugins.ansible.ExtraVar>
       </extraVars>
@@ -207,16 +204,12 @@ build.displayName = &quot;#&quot; + BUILD_NUMBER + &quot;-&quot; +JOB_BASE_NAME 
       <notesToPush>
         <hudson.plugins.git.GitPublisher_-NoteToPush>
           <targetRepoName>origin</targetRepoName>
-          <noteMsg>post-build: publishing state changed for application $APPNAME in DC $DCNAME to state $REQUESTED_STATE</noteMsg>
+          <noteMsg>publish-global: changing GLSB ratios for $HOST - GSLB_RATIO_ONPREM is $GSLB_RATIO_ONPREM - GSLB_RATIO_AWS is $GSLB_RATIO_AWS</noteMsg>
           <noteNamespace>master</noteNamespace>
           <noteReplace>false</noteReplace>
         </hudson.plugins.git.GitPublisher_-NoteToPush>
       </notesToPush>
     </hudson.plugins.git.GitPublisher>
   </publishers>
-  <buildWrappers>
-    <org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper plugin="credentials-binding@1.18">
-      <bindings class="empty-list"/>
-    </org.jenkinsci.plugins.credentialsbinding.impl.SecretBuildWrapper>
-  </buildWrappers>
+  <buildWrappers/>
 </project>

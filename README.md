@@ -36,6 +36,8 @@ The Multi-Cluster  can be used:
   - F5AAS Service DNS load balancing
   - F5 Integration with Equinix Smartkey
 
+Follow [Getting Started](http://github.com) for detailed steps on how to build out the A / B Deployment setup.
+
 ## Support
 
 This project is a community effort to promote container ingress service automation and is maintained by F5 BD. For any feature requests or issues, feel free to open an issue and we will give our best effort to address it.

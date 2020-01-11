@@ -14,10 +14,22 @@
       </strategy>
     </jenkins.model.BuildDiscarderProperty>
     <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.12">
-      <gitLabConnection>moad-publish</gitLabConnection>
+      <gitLabConnection>not-used</gitLabConnection>
     </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
     <hudson.model.ParametersDefinitionProperty>
       <parameterDefinitions>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.78">
+          <name>APPNAME</name>
+          <description>Name of the application. When publishing locally, host name is derived from APPNAME.</description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>1</visibleItemCount>
+          <type>PT_SINGLE_SELECT</type>
+          <value>productpage-v1,productpage-v2</value>
+          <defaultValue>productpage-v1</defaultValue>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+          <projectName>Stepped</projectName>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
         <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.78">
           <name>DCNAME</name>
           <description>data centre where the requested state is going to be applied</description>
@@ -28,7 +40,19 @@
           <value>onprem,aws</value>
           <defaultValue>onprem</defaultValue>
           <multiSelectDelimiter>,</multiSelectDelimiter>
-          <projectName>moad-step2-local-batched</projectName>
+          <projectName>Stepped</projectName>
+        </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
+        <com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition plugin="extended-choice-parameter@0.78">
+          <name>REQUESTED_STATE</name>
+          <description>requested state for the application/data centre combination</description>
+          <quoteValue>false</quoteValue>
+          <saveJSONParameterToFile>false</saveJSONParameterToFile>
+          <visibleItemCount>1</visibleItemCount>
+          <type>PT_SINGLE_SELECT</type>
+          <value>bigip-unconfigured,bigip-configured</value>
+          <defaultValue>bigip-unconfigured</defaultValue>
+          <multiSelectDelimiter>,</multiSelectDelimiter>
+          <projectName>Stepped</projectName>
         </com.cwctravel.hudson.plugins.extended__choice__parameter.ExtendedChoiceParameterDefinition>
       </parameterDefinitions>
     </hudson.model.ParametersDefinitionProperty>
@@ -37,8 +61,8 @@
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>http://gitlab.bd.f5.com/moad/moad-publish.git</url>
-        <credentialsId>d24fd108-2803-486c-b27a-ea5a070a4717</credentialsId>
+        <url>https://github.com/generic-admin/yourrepohere.git</url>
+        <credentialsId>9790dbab-5874-4db6-9f37-12787ad17b96</credentialsId>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
@@ -65,16 +89,38 @@
 def BUILD_NUMBER = build.properties.environment.BUILD_NUMBER.toString();
 def JOB_BASE_NAME = build.properties.environment.JOB_BASE_NAME.toString();
 
-// def APPNAME = build.properties.environment.APPNAME.toString();
+def APPNAME = build.properties.environment.APPNAME.toString();
 def DCNAME = build.properties.environment.DCNAME.toString();
-// def REQUESTED_STATE = build.properties.environment.REQUESTED_STATE.toString();
+def REQUESTED_STATE = build.properties.environment.REQUESTED_STATE.toString();
 
-build.displayName = &quot;#&quot; + BUILD_NUMBER + &quot;-&quot; +JOB_BASE_NAME + &quot;: &quot; + DCNAME;
+  
+build.displayName = &quot;#&quot; + BUILD_NUMBER + &quot;-&quot; +JOB_BASE_NAME + &quot;: &quot; + APPNAME + &quot;-&quot; + DCNAME + &quot;-&quot; +REQUESTED_STATE;
 </script>
           <sandbox>false</sandbox>
         </script>
       </source>
     </hudson.plugins.groovy.SystemGroovy>
+    <org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder plugin="ansible@1.0">
+      <playbook>config-create-requested-state-publish-local.yaml</playbook>
+      <inventory class="org.jenkinsci.plugins.ansible.InventoryDoNotSpecify"/>
+      <ansibleName>Ansible</ansibleName>
+      <limit></limit>
+      <tags></tags>
+      <skippedTags></skippedTags>
+      <startAtTask></startAtTask>
+      <credentialsId></credentialsId>
+      <vaultCredentialsId>AnsibleVault</vaultCredentialsId>
+      <become>false</become>
+      <becomeUser></becomeUser>
+      <sudo>false</sudo>
+      <sudoUser></sudoUser>
+      <forks>5</forks>
+      <unbufferedOutput>true</unbufferedOutput>
+      <colorizedOutput>false</colorizedOutput>
+      <disableHostKeyChecking>false</disableHostKeyChecking>
+      <additionalParameters></additionalParameters>
+      <copyCredentialsInWorkspace>false</copyCredentialsInWorkspace>
+    </org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder>
     <org.jenkinsci.plugins.ansible.AnsiblePlaybookBuilder plugin="ansible@1.0">
       <playbook>config-validate-publish-local.yaml</playbook>
       <inventory class="org.jenkinsci.plugins.ansible.InventoryDoNotSpecify"/>
@@ -140,7 +186,7 @@ build.displayName = &quot;#&quot; + BUILD_NUMBER + &quot;-&quot; +JOB_BASE_NAME 
       <extraVars>
         <org.jenkinsci.plugins.ansible.ExtraVar>
           <key>msg</key>
-          <value>commit: publish-local batched update for DC $DCNAME</value>
+          <value>commit: publishing state changed for application $APPNAME in DC $DCNAME to state $REQUESTED_STATE</value>
           <hidden>false</hidden>
         </org.jenkinsci.plugins.ansible.ExtraVar>
       </extraVars>
@@ -161,7 +207,7 @@ build.displayName = &quot;#&quot; + BUILD_NUMBER + &quot;-&quot; +JOB_BASE_NAME 
       <notesToPush>
         <hudson.plugins.git.GitPublisher_-NoteToPush>
           <targetRepoName>origin</targetRepoName>
-          <noteMsg>post-build: publishing state changed for DC $DCNAME with batched job</noteMsg>
+          <noteMsg>post-build: publishing state changed for application $APPNAME in DC $DCNAME to state $REQUESTED_STATE</noteMsg>
           <noteNamespace>master</noteNamespace>
           <noteReplace>false</noteReplace>
         </hudson.plugins.git.GitPublisher_-NoteToPush>

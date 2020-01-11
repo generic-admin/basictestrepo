@@ -1,7 +1,7 @@
 <?xml version='1.1' encoding='UTF-8'?>
 <project>
   <actions/>
-  <description>Allows to publish applications following an A/B deployment strategy using GSLB DNS</description>
+  <description>Allows publication of applications following an A/B deployment strategy using GSLB DNS</description>
   <keepDependencies>false</keepDependencies>
   <properties>
     <hudson.plugins.jira.JiraProjectProperty plugin="jira@3.0.8"/>
@@ -14,15 +14,15 @@
       </strategy>
     </jenkins.model.BuildDiscarderProperty>
     <com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty plugin="gitlab-plugin@1.5.12">
-      <gitLabConnection>moad-publish</gitLabConnection>
+      <gitLabConnection>not-used</gitLabConnection>
     </com.dabsquared.gitlabjenkins.connection.GitLabConnectionProperty>
   </properties>
   <scm class="hudson.plugins.git.GitSCM" plugin="git@3.10.1">
     <configVersion>2</configVersion>
     <userRemoteConfigs>
       <hudson.plugins.git.UserRemoteConfig>
-        <url>http://gitlab.bd.f5.com/moad/moad-publish.git</url>
-        <credentialsId>d24fd108-2803-486c-b27a-ea5a070a4717</credentialsId>
+        <url>https://github.com/generic-admin/yourrepohere.git</url>
+        <credentialsId>9790dbab-5874-4db6-9f37-12787ad17b96</credentialsId>
       </hudson.plugins.git.UserRemoteConfig>
     </userRemoteConfigs>
     <branches>
