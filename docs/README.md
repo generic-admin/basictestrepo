@@ -36,3 +36,5 @@ This project is a community effort to promote container ingress service automati
 - Step Three
 
 These are the steps...
+
+I made a commit from CLI
